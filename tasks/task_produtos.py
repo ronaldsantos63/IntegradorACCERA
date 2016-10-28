@@ -16,7 +16,8 @@ from models.produtos import ProdutosCabecalho, ProdutosDados, ProdutosRodape
 
 
 class TaskProdutos(QThread):
-    alerta = pyqtSignal(str, str, str)
+    alerta = pyqtSignal(str, str, str, str)
+    tray_msg = pyqtSignal(str, str, str)
     progress_max = pyqtSignal(int)
     progress_value = pyqtSignal(int)
 
@@ -61,5 +62,18 @@ class TaskProdutos(QThread):
             with open(arqProd, 'a') as f:
                 f.write(produtoRodape.linha_formatada)
                 f.flush()
+
+            if not self.pai.isVisible():
+                self.tray_msg.emit('i', u"IntegradorACCERA", u"Processo dos <strong>Produtos</strong> finalizado!")
+            else:
+                self.alerta.emit('c', 'IntegradorACCERA', u"Processo dos PRODUTOS finalizado!")
         except Exception, e:
+            print "Erro ao processar produtos"
+            print '-' * 30
             print e
+            print '-' * 30
+            if not self.pai.isVisible():
+                self.tray_msg.emit('c', u"IntegradorACCERA", u"Erro ao gerar produtos!\nErro: {}".format(e.message))
+            else:
+                self.alerta.emit('c', 'IntegradorACCERA', "Erro ao gerar produtos!\nErro: {}".format(e.message), unicode(e))
+            self.terminate()

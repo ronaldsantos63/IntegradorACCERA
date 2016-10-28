@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>718</width>
-    <height>408</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,16 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_2">
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton">
+               <widget class="QToolButton" name="bt_add_forn_accera">
+                <property name="toolTip">
+                 <string>Adiciona o fornecedor ACCERA selecionado no COMBOBOX na tabela</string>
+                </property>
+                <property name="statusTip">
+                 <string>Adiciona o fornecedor ACCERA selecionado no COMBOBOX na tabela de fornecedores ACCERA</string>
+                </property>
+                <property name="whatsThis">
+                 <string>Adiciona o fornecedor ACCERA selecionado no COMBOBOX na tabela</string>
+                </property>
                 <property name="text">
                  <string>+</string>
                 </property>
@@ -46,13 +55,64 @@
               </item>
               <item row="0" column="0">
                <widget class="QComboBox" name="cmb_fornecedor_accera">
+                <property name="toolTip">
+                 <string>Selecione os fornecedores &lt;strong&gt;ACCERA&lt;/strong&gt; e pressione &lt;strong&gt;ENTER&lt;/strong&gt; ou no botao &lt;strong&gt;+&lt;/strong&gt; ao lado para adicionar a lista</string>
+                </property>
+                <property name="statusTip">
+                 <string>Selecione os fornecedores ACCERA e pressione ENTER ou no botao + ao lado para adicionar a lista</string>
+                </property>
+                <property name="whatsThis">
+                 <string>Selecione os fornecedores ACCERA e pressione ENTER ou no botao + ao lado para adicionar a lista</string>
+                </property>
                 <property name="editable">
                  <bool>true</bool>
+                </property>
+                <property name="maxVisibleItems">
+                 <number>5</number>
+                </property>
+                <property name="insertPolicy">
+                 <enum>QComboBox::InsertAlphabetically</enum>
                 </property>
                </widget>
               </item>
               <item row="1" column="0" colspan="2">
                <widget class="QTableWidget" name="tb_fornecedores">
+                <property name="toolTip">
+                 <string>Tabela de Fornecedores ACCERA</string>
+                </property>
+                <property name="statusTip">
+                 <string>Tabela de Fornecedores ACCERA</string>
+                </property>
+                <property name="whatsThis">
+                 <string>Tabela de Fornecedores ACCERA</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::MultiSelection</enum>
+                </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
+                </property>
+                <property name="showGrid">
+                 <bool>true</bool>
+                </property>
+                <attribute name="horizontalHeaderMinimumSectionSize">
+                 <number>33</number>
+                </attribute>
+                <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+                 <bool>true</bool>
+                </attribute>
                 <column>
                  <property name="text">
                   <string>Código</string>
@@ -76,6 +136,15 @@
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="1" column="0">
                <widget class="QDateTimeEdit" name="dte_hora">
+                <property name="toolTip">
+                 <string>Define o horário que será gerado os arquivos de integração</string>
+                </property>
+                <property name="statusTip">
+                 <string>Define o horário que será gerado os arquivos de integração</string>
+                </property>
+                <property name="whatsThis">
+                 <string>Define o horário que será gerado os arquivos de integração</string>
+                </property>
                 <property name="currentSection">
                  <enum>QDateTimeEdit::HourSection</enum>
                 </property>
@@ -97,6 +166,23 @@
                 </property>
                </widget>
               </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>Código do Distrbuidor (CNPJ)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLineEdit" name="txt_cod_distrbuidor">
+                <property name="maxLength">
+                 <number>14</number>
+                </property>
+                <property name="placeholderText">
+                 <string>CNPJ do Distribuidor</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -105,13 +191,216 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tab_conf_accera">
+       <attribute name="title">
+        <string>Conf. ACCERA</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="2" column="1">
+         <widget class="QGroupBox" name="grp_accera_vendas_distrib">
+          <property name="toolTip">
+           <string>Vendas do &lt;strong&gt;Distribuidor&lt;/strong&gt;</string>
+          </property>
+          <property name="statusTip">
+           <string>Vendas do Distribuidor</string>
+          </property>
+          <property name="whatsThis">
+           <string>Vendas do &lt;strong&gt;Distribuidor&lt;/strong&gt;</string>
+          </property>
+          <property name="title">
+           <string>Vendas Distribuidor</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QLabel" name="lb_accera_vendas_distrib">
+             <property name="text">
+              <string>Se ativo será gerado diariamente as vendas dos ultimos dias 30 dias</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="grp_accera_produtos">
+          <property name="toolTip">
+           <string>Cadastro de produtos</string>
+          </property>
+          <property name="statusTip">
+           <string>Cadastro de produtos</string>
+          </property>
+          <property name="whatsThis">
+           <string>Cadastro de produtos</string>
+          </property>
+          <property name="title">
+           <string>Produtos</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QLabel" name="lb_accera_produtos">
+             <property name="text">
+              <string>Se ativo será gerado diariamente</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QGroupBox" name="grp_accera_estoque">
+          <property name="toolTip">
+           <string>Estoque dos produtos</string>
+          </property>
+          <property name="statusTip">
+           <string>Estoque dos produtos</string>
+          </property>
+          <property name="whatsThis">
+           <string>Estoque dos produtos</string>
+          </property>
+          <property name="title">
+           <string>Estoque</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QRadioButton" name="rad_accera_estoque_ult_5_dias">
+             <property name="text">
+              <string>Ultimos 5 dias</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rad_accera_estoque_posicao_atual">
+             <property name="text">
+              <string>Posição atual</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="grp_accera_cds_lojas">
+          <property name="toolTip">
+           <string>Cadastro de &lt;strong&gt;Centro de Distribuições&lt;/strong&gt; ou &lt;strong&gt;Lojas&lt;/strong&gt; do distribuidor</string>
+          </property>
+          <property name="statusTip">
+           <string>Cadastro de CENTRO DE DISTRIBUIÇÃO ou LOJAS do distribuidor</string>
+          </property>
+          <property name="whatsThis">
+           <string>Cadastro de CENTRO DE DISTRIBUIÇÃO ou LOJAS do distribuidor</string>
+          </property>
+          <property name="title">
+           <string>CDs/Lojas</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QLabel" name="lb_accera_cds_lojas">
+             <property name="text">
+              <string>Se ativo será gerado diaremente </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QGroupBox" name="grp_accera_clientes">
+          <property name="toolTip">
+           <string>Clientes</string>
+          </property>
+          <property name="statusTip">
+           <string>Clientes</string>
+          </property>
+          <property name="whatsThis">
+           <string>Clientes</string>
+          </property>
+          <property name="title">
+           <string>Clientes</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QLabel" name="lb_accera_clientes">
+             <property name="text">
+              <string>Se ativo será gerado diariamente</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QGroupBox" name="grp_accera_nfe_receb">
+          <property name="toolTip">
+           <string>Notas fiscais de recebidas da ACCERA</string>
+          </property>
+          <property name="statusTip">
+           <string>Notas fiscais de recebidas da ACCERA</string>
+          </property>
+          <property name="whatsThis">
+           <string>Notas fiscais de recebidas da ACCERA</string>
+          </property>
+          <property name="title">
+           <string>Notas Fiscais Recebidas</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <item>
+            <widget class="QLabel" name="lb_accera_nfe_receb">
+             <property name="text">
+              <string>Se ativo será gerado diariamente todas notas fiscais de entrada dos ultimos 30 dias</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_conf_bd">
        <attribute name="title">
         <string>Conf. BD</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="grp_conf_bd">
           <property name="title">
            <string/>
           </property>
@@ -124,8 +413,17 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="toolTip">
+              <string>Sistema de Gerenciamento de Banco de Dados [ Firebird, SQLServer, etc.. ]</string>
+             </property>
+             <property name="statusTip">
+              <string>Sistema de Gerenciamento de Banco de Dados [ Firebird, SQLServer, etc.. ]</string>
+             </property>
+             <property name="whatsThis">
+              <string>Sistema de Gerenciamento de Banco de Dados [ Firebird, SQLServer, etc.. ]</string>
+             </property>
              <property name="editable">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="currentIndex">
               <number>-1</number>
@@ -172,6 +470,15 @@
            </item>
            <item row="5" column="1">
             <widget class="QLineEdit" name="txt_banco">
+             <property name="toolTip">
+              <string>Nome ou caminho do banco de dados</string>
+             </property>
+             <property name="statusTip">
+              <string>Nome ou caminho do banco de dados</string>
+             </property>
+             <property name="whatsThis">
+              <string>Nome ou caminho do banco de dados</string>
+             </property>
              <property name="placeholderText">
               <string>Nome ou caminho do banco de dados</string>
              </property>
@@ -179,6 +486,15 @@
            </item>
            <item row="1" column="1">
             <widget class="QLineEdit" name="txt_servidor">
+             <property name="toolTip">
+              <string>Servidor onde se encontra o SGBD</string>
+             </property>
+             <property name="statusTip">
+              <string>Servidor onde se encontra o SGBD</string>
+             </property>
+             <property name="whatsThis">
+              <string>Servidor onde se encontra o SGBD</string>
+             </property>
              <property name="placeholderText">
               <string>IP ou nome da máquina onde se encontra o banco de dados</string>
              </property>
@@ -186,6 +502,15 @@
            </item>
            <item row="2" column="1">
             <widget class="QLineEdit" name="txt_usuario">
+             <property name="toolTip">
+              <string>Usuário do SGBD</string>
+             </property>
+             <property name="statusTip">
+              <string>Usuário do SGBD</string>
+             </property>
+             <property name="whatsThis">
+              <string>Usuário do SGBD</string>
+             </property>
              <property name="echoMode">
               <enum>QLineEdit::Normal</enum>
              </property>
@@ -203,6 +528,15 @@
            </item>
            <item row="3" column="1">
             <widget class="QLineEdit" name="txt_senha">
+             <property name="toolTip">
+              <string>Senha do SGBD</string>
+             </property>
+             <property name="statusTip">
+              <string>Senha do SGBD</string>
+             </property>
+             <property name="whatsThis">
+              <string>Senha do SGBD</string>
+             </property>
              <property name="echoMode">
               <enum>QLineEdit::Password</enum>
              </property>
@@ -220,6 +554,15 @@
            </item>
            <item row="4" column="1">
             <widget class="QLineEdit" name="txt_porta">
+             <property name="toolTip">
+              <string>Porta de comunicação com o SGBD</string>
+             </property>
+             <property name="statusTip">
+              <string>Porta de comunicação com o SGBD</string>
+             </property>
+             <property name="whatsThis">
+              <string>Porta de comunicação com o SGBD</string>
+             </property>
              <property name="maxLength">
               <number>4</number>
              </property>
@@ -246,6 +589,18 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="bt_testar">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Gerar arquivos de teste para confirmar se está funcionando as configurações</string>
+         </property>
+         <property name="statusTip">
+          <string>Gerar arquivos de teste para confirmar se está funcionando as configurações</string>
+         </property>
+         <property name="whatsThis">
+          <string>Gerar arquivos de teste para confirmar se está funcionando as configurações</string>
+         </property>
          <property name="text">
           <string>Testar</string>
          </property>
@@ -253,6 +608,18 @@
        </item>
        <item>
         <widget class="QPushButton" name="bt_processar">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Iniciar processo de monitoramento</string>
+         </property>
+         <property name="statusTip">
+          <string>Iniciar processo de monitoramento</string>
+         </property>
+         <property name="whatsThis">
+          <string>Iniciar processo de monitoramento</string>
+         </property>
          <property name="text">
           <string>Iniciar Processo</string>
          </property>
@@ -273,6 +640,18 @@
        </item>
        <item>
         <widget class="QPushButton" name="bt_gravar">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Gravar alterações realizadas</string>
+         </property>
+         <property name="statusTip">
+          <string>Gravar alterações realizadas</string>
+         </property>
+         <property name="whatsThis">
+          <string>Gravar alterações realizadas</string>
+         </property>
          <property name="text">
           <string>Gravar</string>
          </property>
@@ -280,6 +659,18 @@
        </item>
        <item>
         <widget class="QPushButton" name="bt_sair">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Fechar aplicação</string>
+         </property>
+         <property name="statusTip">
+          <string>Fechar aplicação</string>
+         </property>
+         <property name="whatsThis">
+          <string>Fechar aplicação</string>
+         </property>
          <property name="text">
           <string>Sair</string>
          </property>
@@ -316,6 +707,31 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>dte_hora</tabstop>
+  <tabstop>cmb_fornecedor_accera</tabstop>
+  <tabstop>bt_add_forn_accera</tabstop>
+  <tabstop>tb_fornecedores</tabstop>
+  <tabstop>grp_accera_produtos</tabstop>
+  <tabstop>grp_accera_cds_lojas</tabstop>
+  <tabstop>grp_accera_estoque</tabstop>
+  <tabstop>rad_accera_estoque_ult_5_dias</tabstop>
+  <tabstop>rad_accera_estoque_posicao_atual</tabstop>
+  <tabstop>grp_accera_vendas_distrib</tabstop>
+  <tabstop>grp_accera_clientes</tabstop>
+  <tabstop>grp_accera_nfe_receb</tabstop>
+  <tabstop>cmb_sgbd</tabstop>
+  <tabstop>txt_servidor</tabstop>
+  <tabstop>txt_usuario</tabstop>
+  <tabstop>txt_senha</tabstop>
+  <tabstop>txt_porta</tabstop>
+  <tabstop>txt_banco</tabstop>
+  <tabstop>bt_gravar</tabstop>
+  <tabstop>bt_testar</tabstop>
+  <tabstop>bt_processar</tabstop>
+  <tabstop>bt_sair</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

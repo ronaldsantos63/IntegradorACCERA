@@ -13,8 +13,9 @@ from PyQt4.QtCore import QSettings
 
 
 class Connecta(object):
-    def __init__(self):
+    def __init__(self, parent=None):
         super(Connecta, self).__init__()
+        self.__parent = parent
         self.__conn = None
         self.__cursorQuery = None
         self.__cursorCommand = None
@@ -62,7 +63,7 @@ class Connecta(object):
         except Exception, e:
             return [False, u'Erro executar Comando!\nSQL: {0}\nErro: {1}'.format(sql, unicode(e))]
 
-    def query(self, sql, params):
+    def query(self, sql, params=None):
         try:
             if params:
                 self.__cursorQuery.execute(sql, params)
