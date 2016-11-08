@@ -7,18 +7,21 @@
 # Criado em: 14 de Agosto de 2016 as 18:29         
 # ----------------------------------------------------------------------
 
+from os import path, remove
 from PyQt4.QtCore import QThread, pyqtSignal
-
 from datetime import datetime
 
-from controllers.connecta import Connecta
 from models.vendas import VendasCabecalho, VendasDados, VendasRodape
+
+__app_titulo__ = 'IntegradorACCERA'
 
 
 class TaskVendas(QThread):
-    alerta = pyqtSignal(str, str, str)
+    alerta = pyqtSignal(str, str, str, str)
+    tray_msg = pyqtSignal(str, str, str)
     progress_max = pyqtSignal(int)
     progress_value = pyqtSignal(int)
+    info = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(TaskVendas, self).__init__(parent)
@@ -26,32 +29,86 @@ class TaskVendas(QThread):
 
     def run(self):
         try:
-            self.cx = Connecta()
-            self.cx.connectDB()
-            result = self.cx.query(
-                "select (select PROPRIO.PRPCGC from PROPRIO) as cd_loja, min(nf.NFSDATSAI) dt_inicial, max(nf.NFSDATSAI) dt_final from NOTAFISCAL nf where exists( select 1 from ITEM_NOTA_FISCAL inf where inf.NFSCTR = nf.NFSCTR and exists( select 1 from PRODUTO_FORNECEDOR pf where pf.PROCOD = inf.PROCOD and pf.FORCOD in ('0017', '0020') ) ) and nf.NFSDATSAI between '07/01/2016' and '07/31/2016'",
-                [])
+            if self.pai.conectado_bd[0]:
+                self.tray_msg.emit('i', __app_titulo__, u'Processando Vendas...')
+                self.info.emit(u"Processando Vendas...")
 
-            arqVendas = 'ACC_SELLOUT_' + datetime.now().strftime('%Y%m%d') + '.txt'
+                # Pegando lista de fornecedores da tabela fornecedores do sistema IntegradorACCERA
+                ls_fornecedores = ",".join(
+                        ["'" + str(codforn['codigo']) + "'" for codforn in self.pai.pegaDadosTabela()])
 
-            cab_vendas = VendasCabecalho()
-            rod_vendas = VendasRodape()
+                # Falta ajustar para pegar a data do mes atual do campo nf.nfsdatsai
+                sql_cab = "select (select PROPRIO.PRPCGC from PROPRIO) as cd_loja, min(nf.NFSDATSAI) dt_inicial, " \
+                      "max(nf.NFSDATSAI) dt_final from NOTAFISCAL nf " \
+                      "where exists( select 1 from ITEM_NOTA_FISCAL inf where inf.NFSCTR = nf.NFSCTR " \
+                      "and exists( select 1 from PRODUTO_FORNECEDOR pf where pf.PROCOD = inf.PROCOD " \
+                      "and pf.FORCOD in ({forns}) ) ) and nf.NFSDATSAI between '07/01/2016' and '07/31/2016'".format(
+                    forns=ls_fornecedores
+                )
 
-            for registro in result[1]:
-                cab_vendas.distribuidor_cod = registro[0]
-                cab_vendas.data_inicial = registro[1]
-                cab_vendas.data_final = registro[2]
-                with open(arqVendas, 'a') as f:
-                    f.write(cab_vendas.linha_formatada)
-                    f.flush()
+                # Falta ajustar para pegar a data do mes atual do campo nf.nfsdatsai
+                sql_dados = "select (select PROPRIO.PRPCGC from PROPRIO) as cd_loja, f.FORCGC, " \
+                            "coalesce(pa.PROCODAUX, inf.PROCOD) as procodaux, '' lote_numero, '' lote_data, " \
+                            "inf.INFQTDEMB, inf.INFVLRTOT, nf.NFSNUM, nf.NFSDATSAI, " \
+                            "case when nf.NFSTIP = 'NFV' then 'V' when nf.NFSTIP = 'CAN' then 'C' end transacao_tip, " \
+                            "nf.CFOCOD, case when char_length(nf.NFSCLICPFCGC) < 12 then '1' else '2' end pdv_tipo, " \
+                            "nf.NFSCLICPFCGC as pdv_indentif, nf.NFSCLIDES as pdv_descricao, nf.NFSCLICEP as pdv_cep,  " \
+                            "'' pdv_classificacao, (select PROPRIO.PRPCGC || ' - ' || PROPRIO.PRPDES from PROPRIO) vendedor," \
+                            " '' livre1, '' livre2  from ITEM_NOTA_FISCAL inf " \
+                            "inner join PRODUTO_FORNECEDOR pf on (pf.PROCOD = inf.PROCOD and pf.FORCOD in ({forns})" \
+                            " and exists( select 1 from ITEVDA itv where itv.PROCOD = pf.PROCOD " \
+                            "and itv.TRNDAT >= '01/01/2014' )) " \
+                            "inner join NOTAFISCAL nf on (nf.NFSCTR = inf.NFSCTR and nf.NFSTIP in ('NFV', 'CAN') " \
+                            "and nf.NFSDATSAI between '07/01/2016' and '07/31/2016') " \
+                            "left outer join FORNECEDOR f on (f.FORCOD = pf.FORCOD) " \
+                            "left outer join PRODUTOAUX pa on (pa.PROCOD = pf.PROCOD)".format(forns=ls_fornecedores)
 
-            result = self.cx.query(
-                "select (select PROPRIO.PRPCGC from PROPRIO) as cd_loja, f.FORCGC, coalesce(pa.PROCODAUX, inf.PROCOD) as procodaux, '' lote_numero, '' lote_data, inf.INFQTDEMB, inf.INFVLRTOT, nf.NFSNUM, nf.NFSDATSAI, case when nf.NFSTIP = 'NFV' then 'V' when nf.NFSTIP = 'CAN' then 'C' end transacao_tip, nf.CFOCOD, case when char_length(nf.NFSCLICPFCGC) < 12 then '1' else '2' end pdv_tipo, nf.NFSCLICPFCGC as pdv_indentif, nf.NFSCLIDES as pdv_descricao, nf.NFSCLICEP as pdv_cep,  '' pdv_classificacao, (select PROPRIO.PRPCGC || ' - ' || PROPRIO.PRPDES from PROPRIO) vendedor, '' livre1, '' livre2  from ITEM_NOTA_FISCAL inf inner join PRODUTO_FORNECEDOR pf on (pf.PROCOD = inf.PROCOD and pf.FORCOD in ('0017', '0020') and exists( select 1 from ITEVDA itv where itv.PROCOD = pf.PROCOD and itv.TRNDAT >= '01/01/2014' )) inner join NOTAFISCAL nf on (nf.NFSCTR = inf.NFSCTR and nf.NFSTIP in ('NFV', 'CAN') and nf.NFSDATSAI between '07/01/2016' and '07/31/2016') left outer join FORNECEDOR f on (f.FORCOD = pf.FORCOD) left outer join PRODUTOAUX pa on (pa.PROCOD = pf.PROCOD)",
-                [])
+                result_cab = self.pai.cx.query(sql_cab, [])
+                result = self.pai.cx.query(sql_dados, [])
 
-            if result[0]:
-                print 'Vai percorrer os dados'
-                for registro in result[1]:
+                if result_cab[0] and result[0]:
+                    dados_cab = result_cab[1].fetchall()
+                    dados = result[1].fetchall()
+
+                    self.progress_max.emit(len(dados_cab) + len(dados))
+                    contador = 0
+                else:
+                    self.info.emit(u"Erro interno!\nErro ao executar Script SQL de Vendas!")
+                    self.tray_msg.emit('i', __app_titulo__, u'Erro ao executar Script SQL de Vendas!')
+                    if self.pai.isVisible():
+                        self.alerta.emit('i', __app_titulo__, 'Erro ao execurar Script SQL de Vendas', "")
+                    self.sleep(3)
+                    self.terminate()
+
+                arqVendas = 'ACC_SELLOUT_' + datetime.now().strftime('%Y%m%d') + '.txt'
+
+                if path.exists(arqVendas):
+                    remove(arqVendas)
+
+                cab_vendas = VendasCabecalho()
+                rod_vendas = VendasRodape()
+
+                for registro in dados_cab:
+                    contador += 1
+
+                    print registro
+
+                    print "Distribuidor: ", registro[0]
+                    cab_vendas.distribuidor_cod = registro[0]
+                    print "Data Inicial: ", registro[1]
+                    cab_vendas.data_inicial = registro[1]
+                    print "Data Final: ", registro[2]
+                    cab_vendas.data_final = registro[2]
+                    with open(arqVendas, 'a') as f:
+                        f.write(cab_vendas.linha_formatada)
+                        f.flush()
+
+                    self.progress_value.emit(contador)
+
+                # print 'Vai percorrer os dados'
+                for registro in dados:
+                    contador += 1
+
                     dados_vendas = VendasDados()
                     print '1'
                     dados_vendas.cd_loja_cod = registro[0]
@@ -95,11 +152,32 @@ class TaskVendas(QThread):
                     with open(arqVendas, 'a') as f:
                         f.write(dados_vendas.linha_formatada)
                         f.flush()
-            else:
-                print result[1]
+                    self.progress_value.emit(contador)
 
-            with open(arqVendas, 'a') as f:
-                f.write(rod_vendas.linha_formatada)
-                f.flush()
+                with open(arqVendas, 'a') as f:
+                    f.write(rod_vendas.linha_formatada)
+                    f.flush()
+
+                self.info.emit(u"Vendas finalizado!")
+                self.tray_msg.emit('i', __app_titulo__, u'Vendas Finalizado')
+                if self.pai.isVisible():
+                    self.alerta.emit('i', __app_titulo__, 'Vendas Finalizado', "")
+            else:
+                self.info.emit(u"Você não está conectado ao banco de dados!")
+                self.tray_msg.emit('i', __app_titulo__ + " - Vendas", u'Você não está conectado ao banco de dados!\n'
+                                                        u'Por favor revise suas configurações de conexão!')
+                if self.pai.isVisible():
+                    self.alerta.emit('i', __app_titulo__ + ' - Vendas', u'Você não está conectado ao banco de dados!\n'
+                                                        u'Por favor revise suas configurações de conexão!', "")
+            self.sleep(3)
+            self.info.emit("")
+            self.progress_value.emit(0)
         except Exception, e:
             print e
+            self.info.emit(u"Erro no processo das Vendas!")
+            self.progress_value.emit(0)
+            self.tray_msg.emit('i', __app_titulo__, u'Erro Vendas!\nErro: {}'.format(e))
+            if self.pai.isVisible():
+                self.alerta.emit('c', __app_titulo__, 'Vendas Error', unicode(e))
+            self.sleep(3)
+            self.terminate()

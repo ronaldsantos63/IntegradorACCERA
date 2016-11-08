@@ -17,7 +17,7 @@ class Connecta(object):
         super(Connecta, self).__init__()
         self.__parent = parent
         self.__conn = None
-        self.__cursorQuery = None
+        self.cursorQuery = None
         self.__cursorCommand = None
 
     def connectDB(self):
@@ -26,15 +26,16 @@ class Connecta(object):
                 self.__conn.close()
                 self.__conn = None
 
-            cnf = QSettings('IntegradorACCERA', 'connection')
-            host = str(cnf.value('host', '127.0.0.1', type=str))
-            usuario = str(cnf.value('usuario', 'sysdba', type=str))
-            senha = str(cnf.value('senha', 'masterkey', type=str))
-            porta = str(cnf.value('porta', 3050, type=int))
-            banco = str(cnf.value('banco', 'C:/programacao/clientes/orion/vacinorte/syspdv_srv.fdb', type=str))
+            self.__parent.cnf.beginGroup('BD')
+            host = str(self.__parent.cnf.value('servidor', '127.0.0.1').toString())
+            usuario = str(self.__parent.cnf.value('usuario', 'sysdba').toString())
+            senha = str(self.__parent.cnf.value('senha', 'masterkey').toString())
+            porta = int(self.__parent.cnf.value('porta', '3050').toString())
+            banco = str(self.__parent.cnf.value('banco', 'C:/syspdv/syspdv_srv.fdb').toString())
+            self.__parent.cnf.endGroup()
 
-            self.__conn = fdb.connect(host=host, user=usuario, password=senha, port=porta, database=banco, charset='ISO8859_1')
-            self.__cursorQuery = self.__conn.cursor()
+            self.__conn = fdb.connect(host=host, user=usuario, password=senha,
+                                      port=porta, database=banco, charset='ISO8859_1')
             self.__cursorCommand = self.__conn.cursor()
             print 'Conectado com sucesso!'
             return [True, u'Conectado com sucesso!']
@@ -64,11 +65,12 @@ class Connecta(object):
             return [False, u'Erro executar Comando!\nSQL: {0}\nErro: {1}'.format(sql, unicode(e))]
 
     def query(self, sql, params=None):
+        cursorQuery = self.__conn.cursor()
         try:
             if params:
-                self.__cursorQuery.execute(sql, params)
+                cursorQuery.execute(sql, params)
             else:
-                self.__cursorQuery.execute(sql)
-            return [True, self.__cursorQuery]
+                cursorQuery.execute(sql)
+            return [True, cursorQuery]
         except Exception, e:
             return [False, u'Erro executar consulta!\nSQL: {0}\nErro: {1}'.format(sql, unicode(e))]
