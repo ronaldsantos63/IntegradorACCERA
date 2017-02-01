@@ -579,6 +579,69 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_gera_">
+       <attribute name="title">
+        <string>Gerar Arquivos Retroativos</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <widget class="QGroupBox" name="grp_filtro_arq_retroativo">
+          <property name="title">
+           <string>Filtro</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="2">
+            <widget class="QDateEdit" name="dtFinal">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDateEdit" name="dtInicial">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Período: </string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="bt_gerar_arq_retroativo">
+          <property name="text">
+           <string>Gerar arquivos</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
@@ -610,7 +673,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="bt_processar">
+        <widget class="QPushButton" name="bt_monitorar">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -624,7 +687,7 @@
           <string>Iniciar processo de monitoramento</string>
          </property>
          <property name="text">
-          <string>Iniciar Processo</string>
+          <string>Iniciar Monitoramento</string>
          </property>
         </widget>
        </item>
@@ -729,11 +792,15 @@
   <tabstop>txt_senha</tabstop>
   <tabstop>txt_porta</tabstop>
   <tabstop>txt_banco</tabstop>
+  <tabstop>dtInicial</tabstop>
+  <tabstop>dtFinal</tabstop>
+  <tabstop>bt_gerar_arq_retroativo</tabstop>
   <tabstop>bt_gravar</tabstop>
-  <tabstop>bt_testar</tabstop>
-  <tabstop>bt_processar</tabstop>
   <tabstop>bt_sair</tabstop>
+  <tabstop>bt_testar</tabstop>
+  <tabstop>bt_monitorar</tabstop>
   <tabstop>tabWidget</tabstop>
+  <tabstop>txt_cod_distrbuidor</tabstop>
  </tabstops>
  <resources/>
  <connections/>

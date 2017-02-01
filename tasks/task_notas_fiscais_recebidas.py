@@ -9,7 +9,7 @@
 
 from os import path, remove
 from datetime import datetime
-from PyQt4.QtCore import QThread, pyqtSignal
+from PyQt4.QtCore import QThread, pyqtSignal, QDate
 
 from models.notas_fiscais_recebidas import NFRCabecalho,NFRDados,NFRRodape
 
@@ -23,9 +23,10 @@ class TaskNFR(QThread):
     progress_value = pyqtSignal(int)
     info = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(TaskNFR, self).__init__(parent)
         self.pai = parent
+        self.data = data if data is not None else datetime.now()
 
     def run(self):
         try:
@@ -33,19 +34,19 @@ class TaskNFR(QThread):
                 self.tray_msg.emit('i', __app_titulo__, u'Processando Notas Fiscais de Entrada...')
                 self.info.emit(u"Processando Notas Fiscais de Entrada...")
 
-                arqNotaFiscal = 'ACC_NFS_' + datetime.now().strftime('%Y%m%d') + '.txt'
-
-                if path.exists(arqNotaFiscal):
-                    remove(arqNotaFiscal)
-
                 # Pegando lista de fornecedores da tabela fornecedores do sistema IntegradorACCERA
                 ls_fornecedores = ",".join(
                         ["'" + str(codforn['codigo']) + "'" for codforn in self.pai.pegaDadosTabela()])
 
+                dtInicial = QDate(self.data)
+                dtInicial = dtInicial.addDays(-(dtInicial.day() - 1))
+                dtFinal = QDate(self.data)
+                dtFinal = dtFinal.addDays((dtFinal.daysInMonth() - dtFinal.day()))
+
                 # Falta ajustar para pegar a data do mes atual no campo e.entdat
                 sql_cab = "select (select p.PRPCGC from proprio p) cod_distribuidor, min(e.entdat) data_inicial, " \
-                      "max(e.entdat) data_final from ENTRADA e where e.entdat between '07/01/2016' and '07/31/2016' and " \
-                      "e.forcod in ({forns}) ".format(forns=ls_fornecedores)
+                      "max(e.entdat) data_final from ENTRADA e where e.entdat between '{dtInicial:%m/%d/%Y}' and '{dtFinal:%m/%d/%Y}' and " \
+                      "e.forcod in ({forns}) ".format(forns=ls_fornecedores, dtInicial=dtInicial.toPyDate(), dtFinal=dtFinal.toPyDate())
 
                 # Falta ajustar para pegar a data do mes atual no campo e.entdat
                 sql_dados = "select f.FORCGC, e.ENTDOC, 'E' as acao, e.ENTVLRTOT, " \
@@ -53,8 +54,8 @@ class TaskNFR(QThread):
                             "and item_entrada.ENTSER = e.ENTSER and item_entrada.FORCOD = e.forcod " \
                             "and item_entrada.ENTTNF = e.ENTTNF) quantidade, e.ENTDATEMI,e.ENTDAT from ENTRADA e " \
                             "left outer join fornecedor f on(e.forcod = f.forcod ) " \
-                            "where e.entdat between '07/01/2016' and '07/31/2016' and e.forcod in ({forns})".format(
-                        forns=ls_fornecedores
+                            "where e.entdat between '{dtInicial:%m/%d/%Y}' and '{dtFinal:%m/%d/%Y}' and e.forcod in ({forns})".format(
+                        forns=ls_fornecedores, dtInicial=dtInicial.toPyDate(), dtFinal=dtFinal.toPyDate()
                 )
 
                 result_cab = self.pai.cx.query(sql_cab, [])
@@ -73,47 +74,55 @@ class TaskNFR(QThread):
                     self.sleep(3)
                     self.terminate()
 
-                for registro in dados_cab:
-                    contador += 1
+                if len(dados) > 0:
+                    arqNotaFiscal = 'ACC_NFS_' + self.data.strftime('%Y%m%d') + '.txt'
 
-                    cab_nota = NFRCabecalho()
-                    cab_nota.distribuidor_cod = registro[0]
-                    cab_nota.data_inicial = registro[1]
-                    cab_nota.data_final = registro[2]
+                    if path.exists(arqNotaFiscal):
+                        remove(arqNotaFiscal)
 
-                    with open(arqNotaFiscal,'a') as f:
-                        f.write(cab_nota.linha_formatada)
+                    for registro in dados_cab:
+                        contador += 1
+
+                        cab_nota = NFRCabecalho()
+                        cab_nota.distribuidor_cod = registro[0]
+                        cab_nota.data_inicial = registro[1]
+                        cab_nota.data_final = registro[2]
+
+                        with open(arqNotaFiscal,'a') as f:
+                            f.write(cab_nota.linha_formatada)
+                            f.flush()
+
+                        self.progress_value.emit(contador)
+
+                    for registro in dados:
+                        contador += 1
+
+                        dados_nota = NFRDados()
+                        dados_nota.fornecedor_cod = registro[0]
+                        dados_nota.nf_numero = registro[1]
+                        dados_nota.nf_acao = registro[2]
+                        dados_nota.nf_valor = registro[3]
+                        dados_nota.nf_quantidade = registro[4]
+                        dados_nota.nf_acao_data = registro[5]
+                        dados_nota.nf_data_entrada = registro[6]
+
+                        with open(arqNotaFiscal,'a') as f:
+                            f.write(dados_nota.linha_formatada)
+                            f.flush()
+                        self.progress_value.emit(contador)
+
+                    rod_nota = NFRRodape()
+
+                    with open(arqNotaFiscal, 'a') as f:
+                        f.write(rod_nota.linha_formatada)
                         f.flush()
 
-                    self.progress_value.emit(contador)
-
-                for registro in dados:
-                    contador += 1
-
-                    dados_nota = NFRDados()
-                    dados_nota.fornecedor_cod = registro[0]
-                    dados_nota.nf_numero = registro[1]
-                    dados_nota.nf_acao = registro[2]
-                    dados_nota.nf_valor = registro[3]
-                    dados_nota.nf_quantidade = registro[4]
-                    dados_nota.nf_acao_data = registro[5]
-                    dados_nota.nf_data_entrada = registro[6]
-
-                    with open(arqNotaFiscal,'a') as f:
-                        f.write(dados_nota.linha_formatada)
-                        f.flush()
-                    self.progress_value.emit(contador)
-
-                rod_nota = NFRRodape()
-
-                with open(arqNotaFiscal, 'a') as f:
-                    f.write(rod_nota.linha_formatada)
-                    f.flush()
-
-                self.tray_msg.emit('i', __app_titulo__, u'Notas Fiscais de Entrada Finalizado')
-                self.info.emit(u"Notas Fiscais de Entrada Finalizado!")
-                if self.pai.isVisible():
-                    self.alerta.emit('i', __app_titulo__, 'Notas Fiscais de Entrada Finalizado', "")
+                    self.tray_msg.emit('i', __app_titulo__, u'Notas Fiscais de Entrada Finalizado')
+                    self.info.emit(u"Notas Fiscais de Entrada Finalizado!")
+                    if self.pai.isVisible():
+                        self.alerta.emit('i', __app_titulo__, 'Notas Fiscais de Entrada Finalizado', "")
+                else:
+                    self.alerta.emit('i', 'IntegradorACCERA', 'Sem compras no periodo!', '')
             else:
                 self.info.emit(u"Você não está conectado ao banco de dados!")
                 self.tray_msg.emit('i', __app_titulo__ + " - NFe Entrada", u'Você não está conectado ao banco de dados!\n'
@@ -121,6 +130,7 @@ class TaskNFR(QThread):
                 if self.pai.isVisible():
                     self.alerta.emit('i', __app_titulo__ + ' - NFe Entrada', u'Você não está conectado ao banco de dados!\n'
                                                         u'Por favor revise suas configurações de conexão!', "")
+
             self.sleep(3)
             self.info.emit("")
             self.progress_value.emit(0)

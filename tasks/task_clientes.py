@@ -23,9 +23,10 @@ class TaskClientes(QThread):
     progress_value = pyqtSignal(int)
     info = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(TaskClientes, self).__init__(parent)
         self.pai = parent
+        self.data = data if data is not None else datetime.now()
 
     def run(self):
         try:
@@ -33,7 +34,7 @@ class TaskClientes(QThread):
                 self.tray_msg.emit('i', __app_titulo__, u'Processando Clientes...')
                 self.info.emit(u'Processando Clientes...')
 
-                arqClientes = 'ACC_PDVS_' + datetime.now().strftime('%Y%m%d') + '.txt'
+                arqClientes = 'ACC_PDVS_' + self.data.strftime('%Y%m%d') + '.txt'
 
                 if path.exists(arqClientes):
                     remove(arqClientes)
@@ -41,7 +42,7 @@ class TaskClientes(QThread):
                 cab_cli = ClienteCabecalho()
 
                 cab_cli.distribuidor_cod = str(self.pai.txt_cod_distrbuidor.text())
-                cab_cli.data_arquivo = datetime.now()
+                cab_cli.data_arquivo = self.data
 
                 with open(arqClientes, 'a') as f:
                     f.write(cab_cli.linha_formatada)

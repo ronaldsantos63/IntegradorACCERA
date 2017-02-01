@@ -23,9 +23,10 @@ class TaskEstoque(QThread):
     progress_value = pyqtSignal(int)
     info = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(TaskEstoque, self).__init__(parent)
         self.pai = parent
+        self.data = data if data is not None else datetime.now()
 
     def run(self):
         try:
@@ -52,10 +53,10 @@ class TaskEstoque(QThread):
 
                 cab_estoque = EstoqueCabecalho()
                 cab_estoque.distribuidor_cod = str(self.pai.txt_cod_distrbuidor.text())
-                cab_estoque.data_inicial = datetime.now()
-                cab_estoque.data_final = datetime.now()
+                cab_estoque.data_inicial = self.data
+                cab_estoque.data_final = self.data
 
-                arq_estoque = 'ACC_POSESTQ_' + datetime.now().strftime('%Y%m%d') + '.txt'
+                arq_estoque = 'ACC_POSESTQ_' + self.data.strftime('%Y%m%d') + '.txt'
 
                 if path.exists(arq_estoque):
                     remove(arq_estoque)

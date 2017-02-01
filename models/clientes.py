@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------
 
 from utils.funcoes import valida_cnpj, valida_cpf, remove_letras, remove_caracteres_especiais, strftime, strToDate, strIsDate
-from datetime import datetime
+from datetime import datetime, date
 
 
 class ClienteCabecalho(object):

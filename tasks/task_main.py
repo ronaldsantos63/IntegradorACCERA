@@ -8,15 +8,40 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-from PyQt4.QtCore import QThread, Qt, QTime
+from PyQt4.QtCore import QThread, Qt, QTime, pyqtSignal
+
+from tasks.task_produtos import TaskProdutos
+from tasks.task_cds_lojas import TaskCDsLojas
+from tasks.task_clientes import TaskClientes
+from tasks.task_estoque import TaskEstoque
+from tasks.task_notas_fiscais_recebidas import TaskNFR
+from tasks.task_vendas import TaskVendas
 
 
 class TaskMain(QThread):
-    def __init__(self, parent=None):
+    gerar = pyqtSignal(object)
+
+    def __init__(self, parent=None, mutex=None, cond=None):
         super(TaskMain, self).__init__(parent)
         self.pai = parent
+        self.__parar = False
+        self.mutex = mutex
+        self.cond = cond
 
     def run(self):
-        while True:
-            if self.pai.dte_hora.time().toString(Qt.TextDate) == QTime.currentTime().toString():
-                pass
+        while not self.__parar:
+            # print 'Esta no loop'
+            if self.__parar:
+                # print 'Saindo do loop'
+                break
+            if self.pai.dte_hora.time() == QTime.currentTime():
+                # print 'Esta na hora ;)'
+                self.mutex.lock()
+                try:
+                    self.gerar.emit(None)
+                    self.cond.wait(self.mutex)
+                finally:
+                    self.mutex.unlock()
+
+    def parar(self):
+        self.__parar = True

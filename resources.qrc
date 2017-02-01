@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="logo">
+        <file>images/logo/logo.jpg</file>
+    </qresource>
+    <qresource prefix="png">
+        <file>images/png/Exit.png</file>
+    </qresource>
+    <qresource prefix="gifs">
+        <file>images/gifs/loading.gif</file>
+    </qresource>
+</RCC>

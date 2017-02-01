@@ -23,9 +23,10 @@ class TaskProdutos(QThread):
     progress_value = pyqtSignal(int)
     info = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(TaskProdutos, self).__init__(parent)
         self.pai = parent
+        self.data = data if data is not None else datetime.now()
 
     def run(self):
         try:
@@ -56,7 +57,7 @@ class TaskProdutos(QThread):
 
                 result = self.pai.cx.query(sql, [])
 
-                arqProd = 'ACC_CADPROD_' + datetime.now().strftime('%Y%m%d') + '.txt'
+                arqProd = 'ACC_CADPROD_' + self.data.strftime('%Y%m%d') + '.txt'
 
                 if path.exists(arqProd):
                     remove(arqProd)
@@ -67,7 +68,7 @@ class TaskProdutos(QThread):
                 # print 'cod_distribuidor: ', self.pai.txt_cod_distrbuidor.text()
                 # print 'Tipo: ', type(self.pai.txt_cod_distrbuidor.text())
                 produtoCab.cod_distribuidor = str(self.pai.txt_cod_distrbuidor.text())
-                produtoCab.data_criacao_arquivo = datetime.now()
+                produtoCab.data_criacao_arquivo = self.data
 
                 with open(arqProd, 'a') as f:
                     f.write(produtoCab.linha_formatada)

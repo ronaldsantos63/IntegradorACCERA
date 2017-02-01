@@ -23,9 +23,10 @@ class TaskCDsLojas(QThread):
     progress_value = pyqtSignal(int)
     info = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, data=None):
         super(TaskCDsLojas, self).__init__(parent)
         self.pai = parent
+        self.data = data if data is not None else datetime.now()
 
     def run(self):
         try:
@@ -38,9 +39,9 @@ class TaskCDsLojas(QThread):
 
                 cdsLojasCab = CDsLojasCabecalho()
                 cdsLojasCab.distribuidor_cod = str(self.pai.txt_cod_distrbuidor.text())
-                cdsLojasCab.data_criacao_arquivo = datetime.now()
+                cdsLojasCab.data_criacao_arquivo = self.data
 
-                arqCDsLoja = 'ACC_CADSITE_' + datetime.now().strftime('%Y%m%d') + '.txt'
+                arqCDsLoja = 'ACC_CADSITE_' + self.data.strftime('%Y%m%d') + '.txt'
 
                 if path.exists(arqCDsLoja):
                     remove(arqCDsLoja)

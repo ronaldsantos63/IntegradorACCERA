@@ -10,10 +10,12 @@
 import sys
 from collections import OrderedDict
 
-from PyQt4.QtGui import QApplication, QMainWindow, QProgressDialog, QTableWidgetItem, QMessageBox
-from PyQt4.QtCore import QSettings, QTime, Qt, QString
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
 from ui.frm_principal import Ui_Principal, _fromUtf8
+from views.tray import AnimatedSystemTrayIcon
+
 from controllers.connecta import Connecta
 
 # Threads gera arquivos
@@ -26,18 +28,31 @@ from tasks.task_vendas import TaskVendas
 
 # Thread de monitoramento
 from tasks.task_main import TaskMain
+from tasks.task_monit_thread import TaskMonitThread
 
 __app_titulo__ = 'IntegradorACCERA'
 
+import resources
 
 class IntegradorACCERA(QMainWindow, Ui_Principal):
     def __init__(self, parent=None):
         super(IntegradorACCERA, self).__init__(parent)
         self.setupUi(self)
+
+        self.setWindowIcon(QIcon(":logo/images/logo/logo.jpg"))
+
+        movie = QMovie(':/gifs/images/gifs/loading.gif', QByteArray(), self)
+        self.tray = AnimatedSystemTrayIcon(movie, self)
+        self.tray.setToolTip("IntegradorACCERA")
+
         self.cnf = QSettings("IntegradorACCERA.ini", QSettings.IniFormat)
         self.cnf.setFallbacksEnabled(False)
         self.cx = Connecta(self)
         self.conectado_bd = self.cx.connectDB()
+
+        #Conficoes para parar e inicar thread de monitoramento
+        self.mutex = QMutex()
+        self.cond = QWaitCondition()
 
         # tab atual
         # Tab 0 = Geral | Tab 1 = ACCERA | Tab 2 = BD
@@ -49,9 +64,15 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
         self.bt_sair.clicked.connect(self.close)
         self.bt_gravar.clicked.connect(self.salvar_cnf)
         self.bt_testar.clicked.connect(self.teste)
+        self.bt_monitorar.clicked.connect(self.on_off_monit)
+        self.bt_gerar_arq_retroativo.clicked.connect(self.gera_retroativo)
         self.tabWidget.currentChanged.connect(self.tab_alterado)
+        self.tabWidget.setCurrentIndex(self.__tab_atual)
 
         self.form_load()
+
+    def showEvent(self, *args, **kwargs):
+        self.tray.show()
 
     def teste(self):
         if self.__tab_atual == 0:
@@ -68,23 +89,48 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
     def teste_conn_bd(self):
         self.salvar_cnf(True)
         self.conectado_bd = self.cx.connectDB()
+
+        if self.conectado_bd[0]:
+            self.bt_monitorar.setEnabled(True)
+            self.bt_gerar_arq_retroativo.setEnabled(True)
+            self.grp_filtro_arq_retroativo.setEnabled(True)
+            self.txt_cod_distrbuidor.setText(self.cx.query("select COALESCE(prpcgc, '') from proprio")[1].fetchone()[0])
+        else:
+            self.bt_monitorar.setEnabled(False)
+            self.bt_gerar_arq_retroativo.setEnabled(False)
+            self.grp_filtro_arq_retroativo.setEnabled(False)
+        self.popularComboFornecedores()
         QMessageBox.information(self, __app_titulo__, self.conectado_bd[1])
 
     def tab_alterado(self, indx_tab):
         self.__tab_atual = indx_tab
         if indx_tab == 1:
             self.bt_testar.setEnabled(False)
-        else:
+        elif indx_tab == 0:
+            if self.conectado_bd[0]:
+                self.bt_testar.setEnabled(True)
+            else:
+                self.bt_testar.setEnabled(False)
+        elif indx_tab == 2:
             self.bt_testar.setEnabled(True)
+        elif indx_tab == 3:
+            self.bt_testar.setEnabled(False)
+            self.dtInicial.setFocus()
 
-    def gerar(self):
-        task_produto = TaskProdutos(self)
-        task_cds_lojas = TaskCDsLojas(self)
-        task_estoque = TaskEstoque(self)
-        task_vendas = TaskVendas(self)
-        task_clientes = TaskClientes(self)
-        task_nfe_receb = TaskNFR(self)
+    def gerar(self, data=None):
+
+        pool_thread = []
+
+        task_produto = TaskProdutos(self, data)
+        task_cds_lojas = TaskCDsLojas(self, data)
+        task_estoque = TaskEstoque(self, data)
+        task_vendas = TaskVendas(self, data)
+        task_clientes = TaskClientes(self, data)
+        task_nfe_receb = TaskNFR(self, data)
         if self.grp_accera_produtos.isChecked():
+
+            pool_thread.append(task_produto)
+
             task_produto.alerta.connect(self.alertas_internos)
             task_produto.progress_max.connect(self.pbar.setMaximum)
             task_produto.progress_value.connect(self.pbar.setValue)
@@ -96,6 +142,9 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
 
             task_produto.start()
         if self.grp_accera_cds_lojas.isChecked():
+
+            pool_thread.append(task_cds_lojas)
+
             task_cds_lojas.alerta.connect(self.alertas_internos)
             task_cds_lojas.progress_max.connect(self.pbar.setMaximum)
             task_cds_lojas.progress_value.connect(self.pbar.setValue)
@@ -109,6 +158,9 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
                 task_cds_lojas.start()
 
         if self.grp_accera_estoque.isChecked():
+
+            pool_thread.append(task_estoque)
+
             task_estoque.alerta.connect(self.alertas_internos)
             task_estoque.progress_max.connect(self.pbar.setMaximum)
             task_estoque.progress_value.connect(self.pbar.setValue)
@@ -122,6 +174,9 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
                 task_estoque.start()
 
         if self.grp_accera_vendas_distrib.isChecked():
+
+            pool_thread.append(task_vendas)
+
             task_vendas.alerta.connect(self.alertas_internos)
             task_vendas.progress_max.connect(self.pbar.setMaximum)
             task_vendas.progress_value.connect(self.pbar.setValue)
@@ -136,6 +191,9 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
                 task_vendas.start()
 
         if self.grp_accera_clientes.isChecked():
+
+            pool_thread.append(task_clientes)
+
             task_clientes.alerta.connect(self.alertas_internos)
             task_clientes.progress_max.connect(self.pbar.setMaximum)
             task_clientes.progress_value.connect(self.pbar.setValue)
@@ -150,6 +208,9 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
                 task_clientes.start()
 
         if self.grp_accera_nfe_receb.isChecked():
+
+            pool_thread.append(task_nfe_receb)
+
             task_nfe_receb.alerta.connect(self.alertas_internos)
             task_nfe_receb.progress_max.connect(self.pbar.setMaximum)
             task_nfe_receb.progress_value.connect(self.pbar.setValue)
@@ -161,11 +222,25 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
                     and not self.grp_accera_clientes.isChecked():
                 task_nfe_receb.start()
 
+        task_monit_thread = TaskMonitThread(self, pool_thread)
+        task_monit_thread.finished.connect(self.destrava)
+        # task_monit_thread.finished.connect(self.mutex.unlock)
+        task_monit_thread.start()
+
+    def destrava(self):
+        # self.mutex.unlock()
+        self.cond.wakeAll()
+
     def tray_message(self, tipo='i', titulo='IntegradorACCERA', mensagem=''):
         pass
 
     def form_load(self):
+        self.dtFinal.setVisible(False)
         self.popularComboFornecedores()
+
+        #
+        self.dtFinal.setDate(QDate.currentDate())
+        self.dtInicial.setDate(QDate.currentDate())
 
         # Lendo conf e populando controles
         # Populando aba geral
@@ -200,6 +275,11 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
 
         if self.conectado_bd[0]:
             self.txt_cod_distrbuidor.setText(self.cx.query("select COALESCE(prpcgc, '') from proprio")[1].fetchone()[0])
+        else:
+            QMessageBox.warning(self, 'Alerta', u"Você não está conectado ao banco de dados!")
+            self.bt_monitorar.setEnabled(False)
+            self.bt_gerar_arq_retroativo.setEnabled(False)
+            self.grp_filtro_arq_retroativo.setEnabled(False)
 
     def salvar_cnf(self, teste=True):
         try:
@@ -271,13 +351,15 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
         """
         Função que popula o controle ComboFornecedores com os dados do banco de dados!
         """
-        r = self.cx.query("select fordes from fornecedor where forcod not in('0000', NULL) ")
-        if r[0]:
-            r = r[1].fetchall()
-            if r:
-                for item in r:
-                    self.cmb_fornecedor_accera.addItem(item[0])
-        self.cmb_fornecedor_accera.setCurrentIndex(-1)
+        if self.conectado_bd[0]:
+            r = self.cx.query("select fordes from fornecedor where forcod is not null and forcod <> '0000'")
+            self.cmb_fornecedor_accera.clear()
+            if r[0]:
+                r = r[1].fetchall()
+                if r:
+                    for item in r:
+                        self.cmb_fornecedor_accera.addItem(item[0])
+            self.cmb_fornecedor_accera.setCurrentIndex(-1)
 
     def popularTabela(self, valores=[], colunaOrdenacao=0):
         """
@@ -351,9 +433,63 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
             alerta.setDetailedText(erro)
         alerta.show()
 
+    def on_off_monit(self):
+        if self.bt_monitorar.text() == "Iniciar Monitoramento":
+            self.bt_monitorar.setText('Parar Monitoramento')
+            self.tabWidget.setEnabled(False)
+
+            self.th_main = TaskMain(self, self.mutex, self.cond)
+            self.th_main.gerar.connect(self.gerar)
+            self.th_main.start()
+            self.hide()
+            self.tray.showMessage('IntegradorACCERA - informa', u"Aplicação rodando em segundo plano!", self.tray.Information)
+        else:
+            try:
+                self.th_main.parar()
+                self.bt_monitorar.setText("Iniciar Monitoramento")
+                self.tabWidget.setEnabled(True)
+            except Exception, e:
+                print e
+
+    def gera_retroativo(self):
+        self.gerar(self.dtInicial.dateTime().toPyDateTime())
+        self.dtInicial.setFocus()
+
+    def closeEvent(self, evt):
+        if not self.isVisible():
+            bt1 = _fromUtf8("Abrir aplicação?")
+        else:
+            bt1 = "Minimizar para o tray?"
+
+        result = QMessageBox.question(self, _fromUtf8("IntegradorACCERA questiona"), "O que deseja fazer?", bt1,
+                                      "Cancelar?", u"Fechar a aplicação?")
+        if result == 0:
+            print "Evento 0"
+            evt.ignore()
+            if self.isVisible():
+                print "Entrou no if"
+                self.hide()
+                # self.tray.show()
+                self.tray.showMessage(_fromUtf8("IntegradorACCERA Informa"), u"Aplicação rodando em Tray!", self.tray.Information)
+            else:
+                print "Entrou no else"
+                self.show()
+        elif 1 == result:
+            print "Evento 1"
+            evt.ignore()
+            if not self.isVisible():
+                self.show()
+                self.hide()
+                self.tray.showMessage(_fromUtf8("Integrador Informa"), u"Aplicação rodando em Tray!", self.tray.Information)
+                pass
+        elif 2 == result:
+            evt.accept()
+            qApp.quit()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     appIntegrador = IntegradorACCERA()
     appIntegrador.show()
     sys.exit(app.exec_())
