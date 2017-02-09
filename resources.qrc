@@ -1,11 +1,17 @@
 <RCC>
     <qresource prefix="logo">
-        <file>images/logo/logo.jpg</file>
+        <file>images/logo/logo.png</file>
+        <file>images/logo/logo2.jpg</file>
     </qresource>
     <qresource prefix="png">
         <file>images/png/Exit.png</file>
     </qresource>
     <qresource prefix="gifs">
         <file>images/gifs/loading.gif</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>images/ico_widgets/delete_16.png</file>
+        <file>images/ico_widgets/folder.ico</file>
+        <file>images/ico_widgets/view.ico</file>
     </qresource>
 </RCC>

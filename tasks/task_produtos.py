@@ -7,7 +7,7 @@
 # Criado em: 05 de Agosto de 2016 as 11:31         
 # ----------------------------------------------------------------------
 
-from os import path, remove
+from os import path, remove, sep
 from PyQt4.QtCore import QThread, pyqtSignal
 from datetime import datetime
 
@@ -26,6 +26,7 @@ class TaskProdutos(QThread):
     def __init__(self, parent=None, data=None):
         super(TaskProdutos, self).__init__(parent)
         self.pai = parent
+        self.pasta = unicode(self.pai.txt_local_gravar_arquivos.text())
         self.data = data if data is not None else datetime.now()
 
     def run(self):
@@ -57,7 +58,7 @@ class TaskProdutos(QThread):
 
                 result = self.pai.cx.query(sql, [])
 
-                arqProd = 'ACC_CADPROD_' + self.data.strftime('%Y%m%d') + '.txt'
+                arqProd = self.pasta + sep + u'ACC_CADPROD_' + self.data.strftime('%Y%m%d') + u'.txt'
 
                 if path.exists(arqProd):
                     remove(arqProd)

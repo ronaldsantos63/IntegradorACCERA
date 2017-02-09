@@ -9,6 +9,7 @@
 
 from PyQt4 import QtGui, QtCore
 
+import resources_rc
 
 class AnimatedSystemTrayIcon(QtGui.QSystemTrayIcon):
     def UpdateIcon(self):
@@ -20,12 +21,12 @@ class AnimatedSystemTrayIcon(QtGui.QSystemTrayIcon):
         super(AnimatedSystemTrayIcon, self).__init__(parent)
         self.pai = parent
 
-        self.iconDefault = QtGui.QIcon(":/logo/images/logo/logo.jpg")
+        self.iconDefault = QtGui.QIcon(":/logo/images/logo/logo.png")
 
         self.setIcon(self.iconDefault)
 
         menu = QtGui.QMenu(parent)
-        self.AbrirFormPrinAction = menu.addAction(QtGui.QIcon(":/logo/images/logo/logo.jpg"), "Abrir")
+        self.AbrirFormPrinAction = menu.addAction(QtGui.QIcon(":/logo/images/logo/logo.png"), "Abrir")
         # self.IniciarMonitAction = menu.addAction(QtGui.QIcon(":/png/images/png/play.png"), "Iniciar Monitoramento")
         # self.PararMonitAction = menu.addAction(QtGui.QIcon(":/png/images/png/Stop.png"), "Parar Monitoramento")
         # self.PararMonitAction.setEnabled(False)

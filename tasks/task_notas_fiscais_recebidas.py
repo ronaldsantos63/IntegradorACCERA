@@ -7,7 +7,7 @@
 # Criado em: 14 de Agosto de 2016 as 18:29
 # ----------------------------------------------------------------------
 
-from os import path, remove
+from os import path, remove, sep
 from datetime import datetime
 from PyQt4.QtCore import QThread, pyqtSignal, QDate
 
@@ -26,6 +26,7 @@ class TaskNFR(QThread):
     def __init__(self, parent=None, data=None):
         super(TaskNFR, self).__init__(parent)
         self.pai = parent
+        self.pasta = unicode(self.pai.txt_local_gravar_arquivos.text())
         self.data = data if data is not None else datetime.now()
 
     def run(self):
@@ -75,7 +76,7 @@ class TaskNFR(QThread):
                     self.terminate()
 
                 if len(dados) > 0:
-                    arqNotaFiscal = 'ACC_NFS_' + self.data.strftime('%Y%m%d') + '.txt'
+                    arqNotaFiscal = self.pasta + sep + u'ACC_NFS_' + self.data.strftime('%Y%m%d') + u'.txt'
 
                     if path.exists(arqNotaFiscal):
                         remove(arqNotaFiscal)

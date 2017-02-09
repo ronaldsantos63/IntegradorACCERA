@@ -7,7 +7,7 @@
 # Criado em: 22 de Agosto de 2016 as 10:13         
 # ----------------------------------------------------------------------
 
-from os import path, remove
+from os import path, remove, sep
 from PyQt4.QtCore import QThread, pyqtSignal
 from datetime import datetime
 
@@ -26,6 +26,7 @@ class TaskClientes(QThread):
     def __init__(self, parent=None, data=None):
         super(TaskClientes, self).__init__(parent)
         self.pai = parent
+        self.pasta = unicode(self.pai.txt_local_gravar_arquivos.text())
         self.data = data if data is not None else datetime.now()
 
     def run(self):
@@ -34,7 +35,7 @@ class TaskClientes(QThread):
                 self.tray_msg.emit('i', __app_titulo__, u'Processando Clientes...')
                 self.info.emit(u'Processando Clientes...')
 
-                arqClientes = 'ACC_PDVS_' + self.data.strftime('%Y%m%d') + '.txt'
+                arqClientes = self.pasta + sep + u'ACC_PDVS_' + self.data.strftime('%Y%m%d') + u'.txt'
 
                 if path.exists(arqClientes):
                     remove(arqClientes)

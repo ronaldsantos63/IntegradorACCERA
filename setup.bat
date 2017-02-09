@@ -1,1 +1,1 @@
-pyinstaller -y -F -w --uac-admin IntegradorACCERA.py
+pyinstaller -y -F -w --uac-admin --icon=logo.ico IntegradorACCERA.py

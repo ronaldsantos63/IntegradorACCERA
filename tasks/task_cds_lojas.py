@@ -7,7 +7,7 @@
 # Criado em: 05 de Agosto de 2016 as 16:45         
 # ----------------------------------------------------------------------
 
-from os import path, remove
+from os import path, remove, sep
 from PyQt4.QtCore import QThread, pyqtSignal
 from datetime import datetime
 
@@ -27,6 +27,7 @@ class TaskCDsLojas(QThread):
         super(TaskCDsLojas, self).__init__(parent)
         self.pai = parent
         self.data = data if data is not None else datetime.now()
+        self.pasta = unicode(self.pai.txt_local_gravar_arquivos.text())
 
     def run(self):
         try:
@@ -38,10 +39,10 @@ class TaskCDsLojas(QThread):
                 result = self.pai.cx.query("select p.PRPCGC, p.PRPDES, p.PRPUF, p.PRPMUN, p.PRPBAI, p.PRPCEP, 'A' as status_loja from PROPRIO p", [])
 
                 cdsLojasCab = CDsLojasCabecalho()
-                cdsLojasCab.distribuidor_cod = str(self.pai.txt_cod_distrbuidor.text())
+                cdsLojasCab.distribuidor_cod = unicode(self.pai.txt_cod_distrbuidor.text())
                 cdsLojasCab.data_criacao_arquivo = self.data
 
-                arqCDsLoja = 'ACC_CADSITE_' + self.data.strftime('%Y%m%d') + '.txt'
+                arqCDsLoja = self.pasta + sep + u'ACC_CADSITE_' + self.data.strftime('%Y%m%d') + u'.txt'
 
                 if path.exists(arqCDsLoja):
                     remove(arqCDsLoja)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>718</width>
-    <height>472</height>
+    <height>517</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -137,6 +137,13 @@
               <string>Geral</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Hora para gerar arquivos</string>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="0">
                <widget class="QDateTimeEdit" name="dte_hora">
                 <property name="toolTip">
@@ -162,13 +169,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>Hora para gerar arquivos</string>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_8">
                 <property name="text">
@@ -185,6 +185,16 @@
                  <string>CNPJ do Distribuidor</string>
                 </property>
                </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Local para gravar os arquivos gerados</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLineEdit" name="txt_local_gravar_arquivos"/>
               </item>
              </layout>
             </widget>

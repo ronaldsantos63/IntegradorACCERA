@@ -8,10 +8,13 @@
 # ----------------------------------------------------------------------
 
 import sys
+import os
 from collections import OrderedDict
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
+import resources_rc
 
 from ui.frm_principal import Ui_Principal, _fromUtf8
 from views.tray import AnimatedSystemTrayIcon
@@ -32,14 +35,12 @@ from tasks.task_monit_thread import TaskMonitThread
 
 __app_titulo__ = 'IntegradorACCERA'
 
-import resources
-
 class IntegradorACCERA(QMainWindow, Ui_Principal):
     def __init__(self, parent=None):
         super(IntegradorACCERA, self).__init__(parent)
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon(":logo/images/logo/logo.jpg"))
+        self.setWindowIcon(QIcon(":logo/images/logo/logo.png"))
 
         movie = QMovie(':/gifs/images/gifs/loading.gif', QByteArray(), self)
         self.tray = AnimatedSystemTrayIcon(movie, self)
@@ -246,6 +247,7 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
         # Populando aba geral
         self.cnf.beginGroup('GERAL')
         self.dte_hora.setTime(QTime.fromString(self.cnf.value("hora_gerar_arq", "05:00:00").toString(), Qt.TextDate))
+        self.txt_local_gravar_arquivos.setText(self.cnf.value("local_gravar_arquivos", os.getcwd() + os.sep + "arquivos").toString())
         ls_fornecedores = self.cnf.value("lista_accera_fornecedores", []).toPyObject()
         if ls_fornecedores:
             self.popularTabela(ls_fornecedores)
@@ -288,6 +290,7 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
             self.cnf.beginGroup("GERAL")
             self.cnf.setValue('hora_gerar_arq', self.dte_hora.time().toString(Qt.TextDate))
             self.cnf.setValue("lista_accera_fornecedores", self.pegaDadosTabela())
+            self.cnf.setValue("local_gravar_arquivos", self.txt_local_gravar_arquivos.text())
             self.cnf.endGroup()
 
             # Salvando dados da aba Conf ACCERA
@@ -454,6 +457,18 @@ class IntegradorACCERA(QMainWindow, Ui_Principal):
     def gera_retroativo(self):
         self.gerar(self.dtInicial.dateTime().toPyDateTime())
         self.dtInicial.setFocus()
+
+    def keyPressEvent(self, event=QKeyEvent):
+        if event.key() == Qt.Key_F2 and self.txt_local_gravar_arquivos.hasFocus():
+            pasta = QFileDialog.getExistingDirectory(self, u"Escolha a pasta onde deseja gravar os arquivos gerados")
+            if pasta:
+                if not QFile.exists(pasta):
+                    QMessageBox.warning(self, "Alerta", u"A pasta seleciona não existe")
+                    return
+            else:
+                return
+
+            self.txt_local_gravar_arquivos.setText(pasta)
 
     def closeEvent(self, evt):
         if not self.isVisible():

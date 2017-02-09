@@ -7,7 +7,7 @@
 # Criado em: 07 de Agosto de 2016 as 18:49         
 # ----------------------------------------------------------------------
 
-from os import path, remove
+from os import path, remove, sep
 from PyQt4.QtCore import QThread, pyqtSignal
 from datetime import datetime
 
@@ -26,6 +26,7 @@ class TaskEstoque(QThread):
     def __init__(self, parent=None, data=None):
         super(TaskEstoque, self).__init__(parent)
         self.pai = parent
+        self.pasta = unicode(self.pai.txt_local_gravar_arquivos.text())
         self.data = data if data is not None else datetime.now()
 
     def run(self):
@@ -56,7 +57,7 @@ class TaskEstoque(QThread):
                 cab_estoque.data_inicial = self.data
                 cab_estoque.data_final = self.data
 
-                arq_estoque = 'ACC_POSESTQ_' + self.data.strftime('%Y%m%d') + '.txt'
+                arq_estoque = self.pasta + sep + u'ACC_POSESTQ_' + self.data.strftime('%Y%m%d') + u'.txt'
 
                 if path.exists(arq_estoque):
                     remove(arq_estoque)
